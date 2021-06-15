@@ -10,7 +10,9 @@ mypy = "*"
 autopep8 = "*"
 tox = "*"
 pytest = "*"
+# Use Github Actions
 typed-ast = "*"
+importlib_metadata = "*"
 
 [packages]
 repo_sycn = {path = ".", editable = true}
