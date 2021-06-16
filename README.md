@@ -11,6 +11,25 @@ from Network Programming Project
 ## Use Languages
 
 - Python
+- Rust
+
+## Create environments
+
+```bash
+pip install pipenv tox
+
+# 仮想環境で実行
+pipenv install
+pipenv shell
+> repo-sync
+
+# メイン環境で実行
+pipenv install --system --deploy
+repo-sync
+
+# テスト
+tox
+```
 
 ## License
 
