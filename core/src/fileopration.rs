@@ -1,62 +1,104 @@
+use crate::exception::Error::{CannotCopyError, FileNotFoundError};
 use blake2::{Blake2b, Digest};
-use std::{error::Error, fs::File, io, io::BufReader, path::Path};
+use std::{
+    error::Error,
+    fs::{copy, create_dir_all, File},
+    io,
+    io::{BufReader, Read, Write},
+    path::Path,
+};
 
 pub struct FileOperation<'a> {
     path: &'a Path,
-    cache_path: &'a Path,
+    cache_dir: &'a Path,
 }
 
 impl<'a> FileOperation<'a> {
-    pub fn new(path: &'a Path, cache_path: &'a Path) -> Option<Self> {
-        match path.exists() && path.is_file() && cache_path.is_dir() {
-            true => Some(Self {
-                path: path,
-                cache_path: cache_path,
-            }),
-            _ => None,
+    pub fn new(path: &'a Path, cache_dir: &'a Path) -> Result<Self, Box<dyn Error>> {
+        match path.exists() && path.is_file() {
+            true => {
+                if !cache_dir.exists() {
+                    create_dir_all(cache_dir)?;
+                }
+                Ok(Self {
+                    path: path,
+                    cache_dir: cache_dir,
+                })
+            }
+            _ => Err(Box::new(FileNotFoundError(
+                "path is not found or not file.".to_string(),
+            ))),
         }
     }
 
     pub fn check(&self) -> Result<bool, Box<dyn Error>> {
-        let is_exist_cache = self.cache_path.exists();
+        let cache_file = self.cache_dir.join("cache");
+        let is_exist_cache = cache_file.exists();
+        let hash = hash(&mut File::open(self.path)?)?;
 
         if is_exist_cache {
-        }else {
+            let buf = read(&cache_file)?;
+            if diff(buf.clone(), &hash)? {
+                copy_file(&self.path, &self.cache_dir)?;
+                write(&cache_file, &hash.into_bytes())?;
+            } else {
+                write(&cache_file, &buf)?;
+            }
+        } else {
+            write(&cache_file, &hash.into_bytes())?;
         }
 
         Ok(true)
     }
+}
 
-    fn get_latest_cache(&self, cache: File) -> Result<String, Box<dyn Error>> {
-        let latest_hash = BufReader<File>::new(cache).lines();
+fn diff(buf: Vec<u8>, _hash: &String) -> Result<bool, Box<dyn Error>> {
+    let current_hash = String::from_utf8(buf)?;
+    // println!("{}\n{}", current_hash, _hash);
 
-        Ok(format!("{}", latest_hash.next()))
+    if *_hash == current_hash {
+        return Ok(false);
     }
+    Ok(true)
+}
 
-    fn diff(&self, file: File, cache: String) -> Result<bool, Box<dyn Error>> {
-        let current_hash = self.hash(&file)?;
+fn hash(mut file: &mut File) -> Result<String, Box<dyn Error>> {
+    let mut hasher = Blake2b::new();
+    let _ = io::copy(&mut file, &mut hasher)?;
+    Ok(format!("{:x}", hasher.finalize()))
+}
 
-        match &*current_hash {
-            hash => Ok(true),
-            _ => Ok(false),
-        }
+fn copy_file(path: &Path, cache_dir: &Path) -> Result<(), Box<dyn Error>> {
+    if let Some(file_name) = path.file_name() {
+        let to_path = cache_dir.join(file_name);
+        copy(path, to_path)?;
+        return Ok(());
     }
+    Err(Box::new(CannotCopyError()))
+}
 
-    fn hash(&self, file: &File) -> Result<String, Box<dyn Error>>  {
-        let hasher = Blake2b::new();
-        let _ = io::copy(&mut file, &mut hasher)?;
-        format!("{:x}", hasher.finalize())
-    }
+/// Read file.
+///
+/// Arguments:
+/// - path(&Path): file path.
+///
+/// Returns:
+/// - vec![u8]: text value.
+fn read(path: &Path) -> Result<Vec<u8>, Box<dyn Error>> {
+    let mut file = File::open(path)?;
+    let mut buf = Vec::new();
+    let _ = file.read_to_end(&mut buf)?;
 
-    fn file_open(&self) -> Result<File, Box<dyn Error>> {
-        Ok(File::open(self.path)?)
-    }
+    Ok(buf)
+}
 
-    fn cache_read(&self) -> Result<File, Box<dyn Error>> {
-        Ok(File::open(self.cache_path)?)
-    }
-
-    fn cache_create(&self) -> Result<File, Box<dyn Error>> {
-        Ok(File::create(self.cache_path)?)
-    }
+/// Create file.
+///
+/// Arguments:
+/// - path(&Path): file path.
+/// - text(Vec<u8>).
+fn write(path: &Path, text: &Vec<u8>) -> Result<(), Box<dyn Error>> {
+    let mut file = File::create(path)?;
+    file.write_all(text)?;
+    Ok(())
 }
