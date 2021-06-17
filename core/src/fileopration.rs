@@ -36,19 +36,24 @@ impl<'a> FileOperation<'a> {
         let is_exist_cache = cache_file.exists();
         let hash = hash(&mut File::open(self.path)?)?;
 
+        let mut is_change = false;
+
         if is_exist_cache {
             let buf = read(&cache_file)?;
             if diff(buf.clone(), &hash)? {
                 copy_file(&self.path, &self.cache_dir)?;
                 write(&cache_file, &hash.into_bytes())?;
+                is_change = true;
             } else {
                 write(&cache_file, &buf)?;
             }
         } else {
+            copy_file(&self.path, &self.cache_dir)?;
             write(&cache_file, &hash.into_bytes())?;
+            is_change = true;
         }
 
-        Ok(true)
+        Ok(is_change)
     }
 }
 

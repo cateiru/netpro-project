@@ -10,7 +10,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let file_op = FileOperation::new(&target, &cache)?;
-    file_op.check()?;
+    let is_change = file_op.check()?;
+
+    if is_change {
+        println!("Change!!!");
+    } else {
+        println!("Not Change!!!");
+    }
 
     Ok(())
 }
