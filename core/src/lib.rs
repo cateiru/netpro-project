@@ -4,15 +4,18 @@ mod fileopration;
 use fileopration::FileOperation;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
-use std::path::Path;
+use std::{path::Path, thread, time};
 
 #[pyfunction]
 fn fop(file_path: String, dir: String) -> PyResult<()> {
     let _path = Path::new(&file_path);
     let directory = Path::new(&dir);
     let fp = FileOperation::new(_path, directory).unwrap();
+    let sleep_time = time::Duration::from_nanos(100000000);
 
-    while !fp.check().unwrap() {}
+    while !fp.check().unwrap() {
+        thread::sleep(sleep_time);
+    }
 
     Ok(())
 }

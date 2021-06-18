@@ -54,14 +54,10 @@ impl<'a> FileOperation<'a> {
                     // write cache file to target file
                     let text = read(&cache_file_path)?;
                     write(&self.path, &text)?;
-                } else {
-                    // update cache
-                    if diff(&current_hash, &_hash)? {
-                        copy_file(&self.path, &self.cache_dir)?;
-                        write(&cache_file, &_hash.into_bytes())?;
-                        write(&cache_file, &buf)?;
-                        is_change = true;
-                    }
+                } else if diff(&current_hash, &_hash)? {
+                    copy_file(&self.path, &self.cache_dir)?;
+                    write(&cache_file, &_hash.into_bytes())?;
+                    is_change = true;
                 }
             }
         } else {

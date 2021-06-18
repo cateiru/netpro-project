@@ -5,7 +5,7 @@ cd core
 # create .cargo/config
 if [ "$(uname)" == 'Darwin' ]; then
     mkdir .cargo
-    echo '[target.x86_64-apple-darwin]\nrustflags = [\n  "-C", "link-arg=-undefined",\n  "-C", "link-arg=dynamic_lookup",\n]\n\n[target.aarch64-apple-darwin]\nrustflags = [\n  "-C", "link-arg=-undefined",\n  "-C", "link-arg=dynamic_lookup",\n]' > .cargo/config
+    printf "[target.x86_64-apple-darwin]\nrustflags = [\n  \"-C\", \"link-arg=-undefined\",\n  \"-C\", \"link-arg=dynamic_lookup\",\n]\n\n[target.aarch64-apple-darwin]\nrustflags = [\n  \"-C\", \"link-arg=-undefined\",\n  \"-C\", \"link-arg=dynamic_lookup\",\n]" $SHELL > .cargo/config
 fi
 
 cargo build --release
