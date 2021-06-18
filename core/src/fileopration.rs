@@ -38,22 +38,36 @@ impl<'a> FileOperation<'a> {
     pub fn check(&self) -> Result<bool, Box<dyn Error>> {
         let cache_file = self.cache_dir.join("cache");
         let is_exist_cache = cache_file.exists();
-        let hash = hash(&mut File::open(self.path)?)?;
+        let _hash = hash(&mut File::open(self.path)?)?;
 
         let mut is_change = false;
 
         if is_exist_cache {
             let buf = read(&cache_file)?;
-            if diff(buf.clone(), &hash)? {
-                copy_file(&self.path, &self.cache_dir)?;
-                write(&cache_file, &hash.into_bytes())?;
-                is_change = true;
-            } else {
-                write(&cache_file, &buf)?;
+            let current_hash = String::from_utf8(buf.clone())?;
+
+            if let Some(file_name) = self.path.file_name() {
+                let cache_file_path = self.cache_dir.join(file_name);
+                let cache_hash = hash(&mut File::open(&cache_file_path)?)?;
+
+                if diff(&cache_hash, &current_hash)? {
+                    // write cache file to target file
+                    let text = read(&cache_file_path)?;
+                    write(&self.path, &text)?;
+                } else {
+                    // update cache
+                    if diff(&current_hash, &_hash)? {
+                        copy_file(&self.path, &self.cache_dir)?;
+                        write(&cache_file, &_hash.into_bytes())?;
+                        write(&cache_file, &buf)?;
+                        is_change = true;
+                    }
+                }
             }
         } else {
+            // create initialize hash dir
             copy_file(&self.path, &self.cache_dir)?;
-            write(&cache_file, &hash.into_bytes())?;
+            write(&cache_file, &_hash.into_bytes())?;
             is_change = true;
         }
 
@@ -64,16 +78,15 @@ impl<'a> FileOperation<'a> {
 /// Compare hashes.
 ///
 /// Arguments:
-/// - buf: cache file data.
+/// - current_hash: hash.
 /// - _hash: target hash.
 ///
 /// Returns;
 /// - bool: True if the hashes are the same.
-fn diff(buf: Vec<u8>, _hash: &String) -> Result<bool, Box<dyn Error>> {
-    let current_hash = String::from_utf8(buf)?;
+fn diff(current_hash: &String, _hash: &String) -> Result<bool, Box<dyn Error>> {
     // println!("{}\n{}", current_hash, _hash);
 
-    if *_hash == current_hash {
+    if *_hash == *current_hash {
         return Ok(false);
     }
     Ok(true)
