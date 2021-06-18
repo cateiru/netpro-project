@@ -31,6 +31,10 @@ impl<'a> FileOperation<'a> {
         }
     }
 
+    /// Check file update.
+    ///
+    /// Returns:
+    /// - bool: True if updated, false otherwise.
     pub fn check(&self) -> Result<bool, Box<dyn Error>> {
         let cache_file = self.cache_dir.join("cache");
         let is_exist_cache = cache_file.exists();
@@ -57,6 +61,14 @@ impl<'a> FileOperation<'a> {
     }
 }
 
+/// Compare hashes.
+///
+/// Arguments:
+/// - buf: cache file data.
+/// - _hash: target hash.
+///
+/// Returns;
+/// - bool: True if the hashes are the same.
 fn diff(buf: Vec<u8>, _hash: &String) -> Result<bool, Box<dyn Error>> {
     let current_hash = String::from_utf8(buf)?;
     // println!("{}\n{}", current_hash, _hash);
@@ -67,12 +79,27 @@ fn diff(buf: Vec<u8>, _hash: &String) -> Result<bool, Box<dyn Error>> {
     Ok(true)
 }
 
+/// Create file to hash.
+///
+/// Arguments:
+/// - file: file data.
+///
+/// Returns:
+/// - String: hash.
+///
 fn hash(mut file: &mut File) -> Result<String, Box<dyn Error>> {
     let mut hasher = Blake2b::new();
     let _ = io::copy(&mut file, &mut hasher)?;
     Ok(format!("{:x}", hasher.finalize()))
 }
 
+/// Copy file.
+/// path to cache_dir/[name]
+///
+/// Arguments:
+/// - path: target file path.
+/// - cache_dir: copied file path.
+///
 fn copy_file(path: &Path, cache_dir: &Path) -> Result<(), Box<dyn Error>> {
     if let Some(file_name) = path.file_name() {
         let to_path = cache_dir.join(file_name);
@@ -85,7 +112,7 @@ fn copy_file(path: &Path, cache_dir: &Path) -> Result<(), Box<dyn Error>> {
 /// Read file.
 ///
 /// Arguments:
-/// - path(&Path): file path.
+/// - path: file path.
 ///
 /// Returns:
 /// - vec![u8]: text value.
@@ -97,11 +124,11 @@ fn read(path: &Path) -> Result<Vec<u8>, Box<dyn Error>> {
     Ok(buf)
 }
 
-/// Create file.
+/// Write file.
 ///
 /// Arguments:
-/// - path(&Path): file path.
-/// - text(Vec<u8>).
+/// - path: file path.
+/// - text: write text.
 fn write(path: &Path, text: &Vec<u8>) -> Result<(), Box<dyn Error>> {
     let mut file = File::create(path)?;
     file.write_all(text)?;
