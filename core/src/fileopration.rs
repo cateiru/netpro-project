@@ -4,7 +4,7 @@ use std::{
     error::Error,
     fs::{copy, create_dir_all, File},
     io,
-    io::{BufReader, Read, Write},
+    io::{Read, Write},
     path::Path,
 };
 
