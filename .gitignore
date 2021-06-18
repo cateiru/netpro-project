@@ -308,3 +308,7 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/python,venv,windows,linux,macos,rust,visualstudiocode,vim,sublimetext
+
+repo_sync/*.so
+
+core/.cargo/config
