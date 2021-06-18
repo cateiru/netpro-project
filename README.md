@@ -18,6 +18,9 @@ from Network Programming Project
 ```bash
 pip install pipenv tox
 
+# rust build and compile
+./build
+
 # 仮想環境で実行
 pipenv install
 pipenv shell
