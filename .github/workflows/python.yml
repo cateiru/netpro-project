@@ -26,7 +26,7 @@ jobs:
       - name: build rust
         run: cd core && cargo build --release
       - name: move binaly
-        run: cd core && ls -a
+        run: cd core/target/release && ls -a
       - name: Install tox and pipenv
         run: pip install tox pipenv typed-ast
       - name: Run tests
