@@ -7,6 +7,10 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  CARGO_TERM_COLOR: always
+  
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,7 +22,11 @@ jobs:
       - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.8
+      - name: build rust
+        run: cd core && cargo build --release
+      - name: move binaly
+        run: mv core/target/release/libcore.so repo_sync/core.so
       - name: Install tox and pipenv
         run: pip install tox pipenv typed-ast
       - name: Run tests
