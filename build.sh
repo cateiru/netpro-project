@@ -5,4 +5,4 @@ cd core
 cargo build --release
 
 cd ..
-mv $SCRIPT_DIR/core/target/release/libcore.dylib $SCRIPT_DIR/repo_sync/file_op/core.so
+mv $SCRIPT_DIR/core/target/release/libcore.dylib $SCRIPT_DIR/repo_sync/core.so
