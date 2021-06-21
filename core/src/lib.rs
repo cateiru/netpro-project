@@ -1,11 +1,12 @@
 mod exception;
 mod fileopration;
 
-use fileopration::FileOperation;
+pub use fileopration::FileOperation;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 use std::{path::Path, thread, time};
 use ctrlc;
+
 
 #[pyfunction]
 fn fop(file_path: String, dir: String) -> PyResult<()> {
@@ -28,6 +29,3 @@ fn core(_py: Python, m: &PyModule) -> PyResult<()> {
 
     Ok(())
 }
-
-// pub use exception::Error::{CannotCopyError, FileNotFoundError};
-// pub use fileopration::FileOperation;
