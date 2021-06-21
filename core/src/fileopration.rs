@@ -1,12 +1,15 @@
 use crate::exception::Error::FileNotFoundError;
-use blake2::{Blake2b, Digest};
+use sha2::{Sha256, Digest};
 use std::{
     error::Error,
-    fs::{copy, create_dir_all, File},
+    fs::{copy, create_dir_all, File, OpenOptions},
     io,
     io::{Read, Write},
     path::Path,
+    time::SystemTime
 };
+use csv::{WriterBuilder, Writer};
+use chrono::{Local, DateTime};
 
 pub struct FileOperation<'a> {
     path: &'a Path,
@@ -17,8 +20,9 @@ impl<'a> FileOperation<'a> {
     pub fn new(path: &'a Path, cache_dir: &'a Path) -> Result<Self, Box<dyn Error>> {
         match path.exists() && path.is_file() {
             true => {
-                if !cache_dir.exists() {
-                    create_dir_all(cache_dir)?;
+                let history_dir = cache_dir.join("history");
+                if !history_dir.exists() {
+                    create_dir_all(history_dir)?;
                 }
                 Ok(Self {
                     path: path,
@@ -38,7 +42,7 @@ impl<'a> FileOperation<'a> {
     pub fn check(&self) -> Result<bool, Box<dyn Error>> {
         let cache_file = self.cache_dir.join("cache");
         let is_exist_cache = cache_file.exists();
-        let _hash = hash(&mut File::open(self.path)?)?;
+        let _hash = hash(&mut File::open(self.path)?, false)?;
 
         let mut is_change = false;
 
@@ -48,15 +52,25 @@ impl<'a> FileOperation<'a> {
 
             if let Some(file_name) = self.path.file_name() {
                 let cache_file_path = self.cache_dir.join(file_name);
-                let cache_hash = hash(&mut File::open(&cache_file_path)?)?;
+                let cache_hash = hash(&mut File::open(&cache_file_path)?, false)?;
 
                 if diff(&cache_hash, &current_hash)? {
                     // write cache file to target file
                     let text = read(&cache_file_path)?;
                     write(&self.path, &text)?;
+
+                    // save history
+                    let history_hash = hash(&mut File::open(&cache_file_path)?, true)?;
+                    save_history(&history_hash, &cache_file_path, &self.cache_dir)?;
+
                 } else if diff(&current_hash, &_hash)? {
                     copy_file(&self.path, &self.cache_dir)?;
                     write(&cache_file, &_hash.into_bytes())?;
+
+                    // save history
+                    let history_hash = hash(&mut File::open(self.path)?, true)?;
+                    save_history(&history_hash, &self.path, &self.cache_dir)?;
+
                     is_change = true;
                 }
             }
@@ -64,6 +78,11 @@ impl<'a> FileOperation<'a> {
             // create initialize hash dir
             copy_file(&self.path, &self.cache_dir)?;
             write(&cache_file, &_hash.into_bytes())?;
+
+            // save history
+            let history_hash = hash(&mut File::open(self.path)?, true)?;
+            save_history(&history_hash, &self.path, &self.cache_dir)?;
+
             is_change = true;
         }
 
@@ -96,10 +115,14 @@ fn diff(current_hash: &String, _hash: &String) -> Result<bool, Box<dyn Error>> {
 /// Returns:
 /// - String: hash.
 ///
-fn hash(mut file: &mut File) -> Result<String, Box<dyn Error>> {
-    let mut hasher = Blake2b::new();
+fn hash(mut file: &mut File, use_time: bool) -> Result<String, Box<dyn Error>> {
+    let mut hasher = Sha256::new();
     let _ = io::copy(&mut file, &mut hasher)?;
-    Ok(format!("{:x}", hasher.finalize()))
+    if use_time {
+        hasher.update(format!("{}", SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?.as_secs()));
+    }
+    let hash = &format!("{:x}", hasher.finalize())[..10];
+    Ok(hash.to_string())
 }
 
 /// Copy file.
@@ -138,5 +161,31 @@ fn read(path: &Path) -> Result<Vec<u8>, Box<dyn Error>> {
 fn write(path: &Path, text: &Vec<u8>) -> Result<(), Box<dyn Error>> {
     let mut file = File::create(path)?;
     file.write_all(text)?;
+    Ok(())
+}
+
+
+/// save history.
+///
+/// Arguments:
+/// - hash: save hash
+/// - file: target file path
+/// - save_dir: save cache dir path.
+fn save_history(hash: &String, file: &Path, save_dir: &Path) -> Result<(), Box<dyn Error>> {
+    let local_datetime: DateTime<Local> = Local::now();
+    let history_hash_path = save_dir.join("history_hash");
+
+    let mut wtr = match history_hash_path.exists() {
+        true => {
+            let _file = OpenOptions::new().append(true).open(history_hash_path)?;
+            WriterBuilder::new().has_headers(false).from_writer(_file)
+        },
+        false => Writer::from_path(history_hash_path)?,
+    };
+    wtr.write_record(&[format!("{}", local_datetime), hash.to_string()])?;
+    wtr.flush()?;
+
+    let file_path = save_dir.join("history").join(hash);
+    copy(file, file_path)?;
     Ok(())
 }
