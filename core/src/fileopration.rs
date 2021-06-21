@@ -43,47 +43,35 @@ impl<'a> FileOperation<'a> {
         let cache_file = self.cache_dir.join("cache");
         let is_exist_cache = cache_file.exists();
         let _hash = hash(&mut File::open(self.path)?, false)?;
+        let cache_file_path = self.cache_dir.join("cache_file");
 
         let mut is_change = false;
 
         if is_exist_cache {
             let buf = read(&cache_file)?;
             let current_hash = String::from_utf8(buf.clone())?;
-            let cache_file_path = self.cache_dir.join("cache_file");
             let cache_hash = hash(&mut File::open(&cache_file_path)?, false)?;
 
             if diff(&cache_hash, &current_hash)? {
                 // write cache file to target file
                 let text = read(&cache_file_path)?;
                 write(&self.path, &text)?;
-
-                // save history
-                let history_hash = hash(&mut File::open(&cache_file_path)?, true)?;
-                save_history(&history_hash, &cache_file_path, &self.cache_dir)?;
-
+                save_history(&cache_file_path, &self.cache_dir)?;
             } else if diff(&current_hash, &_hash)? {
-                copy_file(&self.path, &self.cache_dir)?;
+                copy_file(&self.path, &cache_file_path)?;
                 write(&cache_file, &_hash.into_bytes())?;
-
-                // save history
-                let history_hash = hash(&mut File::open(self.path)?, true)?;
-                save_history(&history_hash, &self.path, &self.cache_dir)?;
+                save_history(&self.path, &self.cache_dir)?;
 
                 is_change = true;
-
             }
         } else {
             // create initialize hash dir
-            copy_file(&self.path, &self.cache_dir)?;
+            copy_file(&self.path, &cache_file_path)?;
             write(&cache_file, &_hash.into_bytes())?;
-
-            // save history
-            let history_hash = hash(&mut File::open(self.path)?, true)?;
-            save_history(&history_hash, &self.path, &self.cache_dir)?;
+            save_history(&self.path, &self.cache_dir)?;
 
             is_change = true;
         }
-
         Ok(is_change)
     }
 }
@@ -128,10 +116,9 @@ fn hash(mut file: &mut File, use_time: bool) -> Result<String, Box<dyn Error>> {
 ///
 /// Arguments:
 /// - path: target file path.
-/// - cache_dir: copied file path.
+/// - to_path: copied file path.
 ///
-fn copy_file(path: &Path, cache_dir: &Path) -> Result<(), Box<dyn Error>> {
-    let to_path = cache_dir.join("cache_file");
+fn copy_file(path: &Path, to_path: &Path) -> Result<(), Box<dyn Error>> {
     copy(path, to_path)?;
     return Ok(());
 }
@@ -166,12 +153,12 @@ fn write(path: &Path, text: &Vec<u8>) -> Result<(), Box<dyn Error>> {
 /// save history.
 ///
 /// Arguments:
-/// - hash: save hash
 /// - file: target file path
 /// - save_dir: save cache dir path.
-fn save_history(hash: &String, file: &Path, save_dir: &Path) -> Result<(), Box<dyn Error>> {
+fn save_history(file: &Path, save_dir: &Path) -> Result<(), Box<dyn Error>> {
     let local_datetime: DateTime<Local> = Local::now();
     let history_hash_path = save_dir.join("history_hash");
+    let _hash = hash(&mut File::open(file)?, true)?;
 
     let mut wtr = match history_hash_path.exists() {
         true => {
@@ -180,10 +167,10 @@ fn save_history(hash: &String, file: &Path, save_dir: &Path) -> Result<(), Box<d
         },
         false => Writer::from_path(history_hash_path)?,
     };
-    wtr.write_record(&[format!("{}", local_datetime), hash.to_string()])?;
+    wtr.write_record(&[format!("{}", local_datetime), _hash.to_string()])?;
     wtr.flush()?;
 
-    let file_path = save_dir.join("history").join(hash);
+    let file_path = save_dir.join("history").join(_hash);
     copy(file, file_path)?;
     Ok(())
 }
