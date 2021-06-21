@@ -49,30 +49,28 @@ impl<'a> FileOperation<'a> {
         if is_exist_cache {
             let buf = read(&cache_file)?;
             let current_hash = String::from_utf8(buf.clone())?;
+            let cache_file_path = self.cache_dir.join("cache_file");
+            let cache_hash = hash(&mut File::open(&cache_file_path)?, false)?;
 
-            if let Some(file_name) = self.path.file_name() {
-                let cache_file_path = self.cache_dir.join(file_name);
-                let cache_hash = hash(&mut File::open(&cache_file_path)?, false)?;
+            if diff(&cache_hash, &current_hash)? {
+                // write cache file to target file
+                let text = read(&cache_file_path)?;
+                write(&self.path, &text)?;
 
-                if diff(&cache_hash, &current_hash)? {
-                    // write cache file to target file
-                    let text = read(&cache_file_path)?;
-                    write(&self.path, &text)?;
+                // save history
+                let history_hash = hash(&mut File::open(&cache_file_path)?, true)?;
+                save_history(&history_hash, &cache_file_path, &self.cache_dir)?;
 
-                    // save history
-                    let history_hash = hash(&mut File::open(&cache_file_path)?, true)?;
-                    save_history(&history_hash, &cache_file_path, &self.cache_dir)?;
+            } else if diff(&current_hash, &_hash)? {
+                copy_file(&self.path, &self.cache_dir)?;
+                write(&cache_file, &_hash.into_bytes())?;
 
-                } else if diff(&current_hash, &_hash)? {
-                    copy_file(&self.path, &self.cache_dir)?;
-                    write(&cache_file, &_hash.into_bytes())?;
+                // save history
+                let history_hash = hash(&mut File::open(self.path)?, true)?;
+                save_history(&history_hash, &self.path, &self.cache_dir)?;
 
-                    // save history
-                    let history_hash = hash(&mut File::open(self.path)?, true)?;
-                    save_history(&history_hash, &self.path, &self.cache_dir)?;
+                is_change = true;
 
-                    is_change = true;
-                }
             }
         } else {
             // create initialize hash dir
