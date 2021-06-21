@@ -1,4 +1,4 @@
-use crate::exception::Error::{CannotCopyError, FileNotFoundError};
+use crate::exception::Error::FileNotFoundError;
 use blake2::{Blake2b, Digest};
 use std::{
     error::Error,
@@ -110,12 +110,9 @@ fn hash(mut file: &mut File) -> Result<String, Box<dyn Error>> {
 /// - cache_dir: copied file path.
 ///
 fn copy_file(path: &Path, cache_dir: &Path) -> Result<(), Box<dyn Error>> {
-    if let Some(file_name) = path.file_name() {
-        let to_path = cache_dir.join(file_name);
-        copy(path, to_path)?;
-        return Ok(());
-    }
-    Err(Box::new(CannotCopyError()))
+    let to_path = cache_dir.join("cache_file");
+    copy(path, to_path)?;
+    return Ok(());
 }
 
 /// Read file.

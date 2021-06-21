@@ -4,7 +4,4 @@ use thiserror::Error;
 pub enum Error {
     #[error("FileNotfoundError: {0}")]
     FileNotFoundError(String),
-
-    #[error("CannotCopyError")]
-    CannotCopyError(),
 }
