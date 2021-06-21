@@ -167,6 +167,13 @@ fn write(path: &Path, text: &Vec<u8>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+
+/// save history.
+///
+/// Arguments:
+/// - hash: save hash
+/// - file: target file path
+/// - save_dir: save cache dir path.
 fn save_history(hash: &String, file: &Path, save_dir: &Path) -> Result<(), Box<dyn Error>> {
     let local_datetime: DateTime<Local> = Local::now();
     let history_hash_path = save_dir.join("history_hash");
