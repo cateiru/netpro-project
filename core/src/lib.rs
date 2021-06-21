@@ -5,9 +5,11 @@ use fileopration::FileOperation;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 use std::{path::Path, thread, time};
+use ctrlc;
 
 #[pyfunction]
 fn fop(file_path: String, dir: String) -> PyResult<()> {
+    ctrlc::set_handler(|| std::process::exit(2)).unwrap();
     let _path = Path::new(&file_path);
     let directory = Path::new(&dir);
     let fp = FileOperation::new(_path, directory).unwrap();
