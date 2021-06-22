@@ -18,7 +18,7 @@ pub fn show_history(cache_dir: &Path, use_pager: bool) -> Result<(), Box<dyn Err
         Ok(())
     } else {
         Err(Box::new(FileNotFoundError(
-            "cache file is not found.alloc".to_string(),
+            "cache file is not found.".to_string(),
         )))
     }
 }
