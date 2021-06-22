@@ -1,5 +1,5 @@
 use colored::*;
-use csv::ReaderBuilder;
+use csv::{ReaderBuilder, StringRecord};
 use pager::Pager;
 use std::{error::Error, fs::File, path::Path};
 
@@ -25,11 +25,18 @@ pub fn show_history(cache_dir: &Path, use_pager: bool) -> Result<(), Box<dyn Err
 
 fn load_history(file: File) -> Result<(), Box<dyn Error>> {
     let mut rdr = ReaderBuilder::new().has_headers(false).from_reader(file);
+    let mut buffer: Vec<StringRecord> = Vec::new();
     for result in rdr.records() {
         let record = result?;
-        let date = &record[0];
-        let hash = &record[1];
-        let from_remote = &record[2];
+        buffer.push(record);
+    }
+
+    buffer.reverse();
+
+    for log in buffer {
+        let date = &log[0];
+        let hash = &log[1];
+        let from_remote = &log[2];
 
         print!("{}", format!("commit {}", hash).yellow());
         match from_remote {
