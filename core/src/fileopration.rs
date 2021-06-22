@@ -56,11 +56,11 @@ impl<'a> FileOperation<'a> {
                 // write cache file to target file
                 let text = read(&cache_file_path)?;
                 write(&self.path, &text)?;
-                save_history(&cache_file_path, &self.cache_dir)?;
+                save_history(&cache_file_path, &self.cache_dir, true)?;
             } else if diff(&current_hash, &_hash)? {
                 copy_file(&self.path, &cache_file_path)?;
                 write(&cache_file, &_hash.into_bytes())?;
-                save_history(&self.path, &self.cache_dir)?;
+                save_history(&self.path, &self.cache_dir, false)?;
 
                 is_change = true;
             }
@@ -68,7 +68,7 @@ impl<'a> FileOperation<'a> {
             // create initialize hash dir
             copy_file(&self.path, &cache_file_path)?;
             write(&cache_file, &_hash.into_bytes())?;
-            save_history(&self.path, &self.cache_dir)?;
+            save_history(&self.path, &self.cache_dir, false)?;
 
             is_change = true;
         }
@@ -155,7 +155,7 @@ fn write(path: &Path, text: &Vec<u8>) -> Result<(), Box<dyn Error>> {
 /// Arguments:
 /// - file: target file path
 /// - save_dir: save cache dir path.
-fn save_history(file: &Path, save_dir: &Path) -> Result<(), Box<dyn Error>> {
+fn save_history(file: &Path, save_dir: &Path, from_remote: bool) -> Result<(), Box<dyn Error>> {
     let local_datetime: DateTime<Local> = Local::now();
     let history_hash_path = save_dir.join("history_hash");
     let _hash = hash(&mut File::open(file)?, true)?;
@@ -167,7 +167,11 @@ fn save_history(file: &Path, save_dir: &Path) -> Result<(), Box<dyn Error>> {
         },
         false => Writer::from_path(history_hash_path)?,
     };
-    wtr.write_record(&[format!("{}", local_datetime), _hash.to_string()])?;
+    wtr.write_record(&[
+        format!("{}", local_datetime),
+        _hash.to_string(),
+        format!("{}", from_remote)
+    ])?;
     wtr.flush()?;
 
     let file_path = save_dir.join("history").join(_hash);
