@@ -20,7 +20,7 @@ _LOG.setLevel(logging.INFO)
               help="Client address to synchronize.", required=True)
 @click.option('--file', '-f', 'file_path', type=click.Path(exists=True), prompt=True,
               help="File path to synchronize.", required=True)
-def cli(address: List[str], file_path: str) -> None:
+def sync(address: List[str], file_path: str) -> None:
     """
     RepoSync cli
 
@@ -32,3 +32,7 @@ def cli(address: List[str], file_path: str) -> None:
     _LOG.info("file %s", file_path)
 
     fop(file_path, '.cache')
+
+
+def git():
+    pass
