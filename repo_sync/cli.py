@@ -5,7 +5,6 @@ Copyright (C) 2021 Netpro Project RepoSync
 """
 import logging
 from typing import List
-import datetime
 
 import click
 
@@ -37,18 +36,7 @@ def sync(address: List[str], file_path: str) -> None:
     fop(file_path, '.cache')
 
 
-@click.command()
-@click.option('--repo-git', type=click.File('r'), prompt=True, help="view log", required=True)
-def git_log(repo_git: str) -> None:
-    """
-    repo_git (str): read log.txt
-    """
-    with repo_git as f:
-        while True:
-            line = f.readline()
-            if not line:
-                break
-            click.echo(line, nl=False)
+
 
 
     
