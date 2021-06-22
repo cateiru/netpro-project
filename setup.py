@@ -11,7 +11,8 @@ setup(
     packages=find_packages("repo_sync"),
     entry_points={
         'console_scripts': [
-            'repo-sync=repo_sync:cli',
+            'repo-sync=repo_sync:sync',
+            'repo-sync=repo_sync:git_log',
         ],
     },
 )
