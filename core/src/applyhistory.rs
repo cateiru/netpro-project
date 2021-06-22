@@ -9,7 +9,7 @@ use crate::exception::Error::FileNotFoundError;
 /// - target: target file path.
 /// - cache_dir: cache directory.
 pub fn apply_history(hash: String, target: &Path, cache_dir: &Path) -> Result<(), Box<dyn Error>> {
-    let history_dir = cache_dir.join("hisotry");
+    let history_dir = cache_dir.join("history");
     let history_file = history_dir.join(hash);
 
     if history_file.exists() {
