@@ -38,12 +38,12 @@ def sync(address: List[str], file_path: str) -> None:
 
 
 @click.command()
-@click.option('--log', type=click.Path(exists=True), help="read log.txt")
-def git_log(log: str) -> None:
+@click.option('--repo-git', type=click.File('r'), prompt=True, help="view log", required=True)
+def git_log(repo_git: str) -> None:
     """
-    log (str): log file path 
+    repo_git (str): read log.txt
     """
-    with log as f:
+    with repo_git as f:
         while True:
             line = f.readline()
             if not line:
