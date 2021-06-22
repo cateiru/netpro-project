@@ -1,11 +1,9 @@
 mod exception;
 mod fileopration;
-mod showhistory;
 
+use fileopration::FileOperation;
 use std::error::Error;
 use std::{path::Path, thread, time};
-use fileopration::FileOperation;
-
 
 fn main() -> Result<(), Box<dyn Error>> {
     let path = Path::new("README.md");
