@@ -6,12 +6,22 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[[bin]]
+name = "fop"
+path = "src/fop_main.rs"
+
+[[bin]]
+name = "show"
+path = "src/show_main.rs"
+
 [dependencies]
 sha2 = "0.9.5"
 thiserror = "1.0.24"
 csv = "1.1.6"
 chrono = "0.4.6"
 ctrlc = "3.1.9"
+pager = "0.16.0"
+colored = "2.0.0"
 
 [lib]
 name = "core"
