@@ -13,7 +13,7 @@ def git_log(repo_git: str) -> None:
     """
     repo_git (str): read log.txt
     """
-    with repo_git as file:
+    with open(repo_git) as file:
         while True:
             line = file.readline()
             if not line:
