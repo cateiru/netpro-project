@@ -13,9 +13,9 @@ def git_log(repo_git: str) -> None:
     """
     repo_git (str): read log.txt
     """
-    with repo_git as f:
+    with repo_git as file:
         while True:
-            line = f.readline()
+            line = file.readline()
             if not line:
                 break
             click.echo(line, nl=False)

@@ -34,10 +34,3 @@ def sync(address: List[str], file_path: str) -> None:
     _LOG.info("file %s", file_path)
 
     fop(file_path, '.cache')
-
-
-
-
-
-    
-    
