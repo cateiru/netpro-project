@@ -3,8 +3,9 @@
 
 Copyright (C) 2021 Netpro Project RepoSync
 """
-from .cli import cli
+from .cli import sync_cli, git_cli
 
 __all__ = [
-    "cli"
+    "sync_cli",
+    "git_cli",
 ]

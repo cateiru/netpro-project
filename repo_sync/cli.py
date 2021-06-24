@@ -3,15 +3,58 @@ Cli
 
 Copyright (C) 2021 Netpro Project RepoSync
 """
-import core  # pylint: disable=E1101
+import logging
+from typing import List
+
+import click
+
+from .file_op import fop
+
+logging.basicConfig()
+_LOG = logging.getLogger(__name__)
+_LOG.setLevel(logging.INFO)
 
 
-def cli() -> None:
+@click.command()
+@click.option('--address', '-a', multiple=True, prompt=False,
+              help="Client address to synchronize.", required=True)
+@click.option('--file', '-f', 'file_path', type=click.Path(exists=True), prompt=True,
+              help="File path to synchronize.", required=True)
+def sync_cli(address: List[str], file_path: str) -> None:
     """
-    cli
+    RepoSync cli
+
+    Args:
+        address (List[str]): client address to synchronize.
+        file_path (str): file path to synchronize.
     """
-    core.fop("README.md", ".cache")  # pylint: disable=E1101
+    _LOG.info("address: %s", ", \n".join(address))
+    _LOG.info("file %s", file_path)
+
+    fop(file_path, '.cache')
 
 
-if __name__ == "__main__":
-    cli()
+@click.group()
+def git_cli() -> None:
+    """
+    File update and show log.
+    """
+
+
+@git_cli.command()
+def show() -> None:
+    """
+    show logs.
+    """
+
+
+@git_cli.command()
+@click.option('--hash', '-h', 'hash_value', prompt=True, help="A hash of the history to apply.", required=True)
+def applay(hash_value: str) -> None:
+    """
+    Specify a hash to undo history changes.
+
+    Args:
+        hash (str): A hash of the history to apply.
+    """
+    _LOG.info("Hash: %s", hash_value)
