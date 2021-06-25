@@ -13,6 +13,7 @@ setup(
         'console_scripts': [
             'repo-sync=repo_sync.cli:sync_cli',
             'repo-git=repo_sync.cli:git_cli',
+            'run-test=repo_sync.run_test:run_test'
         ],
     },
 )

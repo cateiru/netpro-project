@@ -2,7 +2,9 @@ mod applyhistory;
 mod exception;
 mod fileopration;
 mod showhistory;
+mod loopsum;
 
+pub use loopsum::loop_sum;
 pub use applyhistory::apply_history;
 use ctrlc;
 pub use fileopration::FileOperation;
@@ -42,11 +44,19 @@ fn apply(hash: String, dir: String, target: String) -> PyResult<()> {
     Ok(())
 }
 
+#[pyfunction]
+fn test_loop(max: usize) -> PyResult<usize> {
+    ctrlc::set_handler(|| std::process::exit(2)).unwrap();
+    let ans = loop_sum(max);
+    Ok(ans)
+}
+
 #[pymodule]
 fn core(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(fop, m)?)?;
     m.add_function(wrap_pyfunction!(show, m)?)?;
     m.add_function(wrap_pyfunction!(apply, m)?)?;
+    m.add_function(wrap_pyfunction!(test_loop, m)?)?;
 
     Ok(())
 }
