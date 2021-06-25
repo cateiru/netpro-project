@@ -38,7 +38,7 @@ fn apply(hash: String, dir: String, target: String) -> PyResult<()> {
     ctrlc::set_handler(|| std::process::exit(2)).unwrap();
     let cache_dir = Path::new(&dir);
     let _target = Path::new(&target);
-    apply_history(hash, cache_dir, _target).unwrap();
+    apply_history(hash, _target, cache_dir).unwrap();
     Ok(())
 }
 
