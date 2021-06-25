@@ -41,3 +41,16 @@ def apply(hash_value: str, dir_path: str, file_path: str) -> None:
         file_path (str): Tartget file path.
     """
     core.apply(hash_value, dir_path, file_path)
+
+
+def test_loop(max_value: int) -> int:
+    """
+    test loop
+
+    Args:
+        max_value (int): max loop size.
+
+    Returns:
+        int: all loop sum
+    """
+    return core.test_loop(max_value)
