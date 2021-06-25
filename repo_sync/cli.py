@@ -8,7 +8,7 @@ from typing import List
 
 import click
 
-from .file_op import fop
+from .core_op import fop
 
 logging.basicConfig()
 _LOG = logging.getLogger(__name__)
