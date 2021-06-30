@@ -7,9 +7,11 @@ import logging
 from typing import List
 
 import click
+import socket
 
 from .core_op import fop
-
+from .server import server
+from .client import client
 logging.basicConfig()
 _LOG = logging.getLogger(__name__)
 _LOG.setLevel(logging.INFO)
@@ -33,6 +35,8 @@ def sync_cli(address: List[str], file_path: str) -> None:
 
     fop(file_path, '.cache')
 
+    server(address, file_path)
+    client(address, file_path)
 
 @click.group()
 def git_cli() -> None:

@@ -1,29 +1,30 @@
-# coding: utf-8
-
-# ソケット通信(クライアント側)
 import socket
+from typing import List
 
-ip1 = '127.0.0.1'
-port1 = 8765
-server1 = (ip1, port1)
+PORT = 4455
+FORMAT = "utf-8"
+SIZE = 1024
 
-socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-socket1.connect(server1)
+def client(address: List[str], file_path: str) -> None:
+    """
+    address (List[str]): client address to synchronize.
+    file_path (str): file path to synchronize.
+    """
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect(address, PORT)
 
-line = ''
-while line != 'bye':
-    # 標準入力からデータを取得
-    print('チャットを送ろう')
-    line = input('>>>')
-    
-    # サーバに送信
-    socket1.send(line.encode("UTF-8"))
-    
-    # サーバから受信
-    data1 = socket1.recv(4096).decode()
-    
-    # サーバから受信したデータを出力
-    print('サーバーからの回答: ' + str(data1))
+    file = open(file_path, "r")
+    data = file.read()
 
-socket1.close()
-print('クライアント側終了です')
+    client.send(data.encode(FORMAT))
+    msg = client.recv(SIZE).decode(FORMAT)
+    print(f"[SERVER]: {msg}")
+
+    """ Sending the file data to the server. """
+    client.send(data.encode(FORMAT))
+    msg = client.recv(SIZE).decode(FORMAT)
+    print(f"[SERVER]: {msg}")
+
+    file.close()
+
+    client.close()
