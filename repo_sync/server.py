@@ -19,18 +19,13 @@ def server(address: List[str], file_path: str)-> None:
         conn, addr = server.accept()
         filename = conn.recv(SIZE).decode(FORMAT)
         print(filename)
-        file = open(file_path, "w")
-        conn.send("Filename received.".encode(FORMAT))
-        
-        data = conn.recv(SIZE).decode(FORMAT)
-        print(f"[RECV] Receiving the file data.")
-        file.write(data)
-        conn.send("File data received".encode(FORMAT))
-
-        """ Closing the file. """
-        file.close()
-
-        """ Closing the connection from the client. """
+        with open(file_path, "w") as file:
+            conn.send("Filename received.".encode(FORMAT))
+            
+            data = conn.recv(SIZE).decode(FORMAT)
+            print(f"[RECV] Receiving the file data.")
+            file.write(data)
+            conn.send("File data received".encode(FORMAT))
         conn.close()
         print('disconnected')
 

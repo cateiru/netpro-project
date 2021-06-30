@@ -13,18 +13,17 @@ def client(address: List[str], file_path: str) -> None:
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect(address, PORT)
 
-    file = open(file_path, "r")
-    data = file.read()
+    with open(file_path, "r") as file:
+        data = file.read()
 
-    client.send(data.encode(FORMAT))
-    msg = client.recv(SIZE).decode(FORMAT)
-    print(f"[SERVER]: {msg}")
+        client.send(data.encode(FORMAT))
+        msg = client.recv(SIZE).decode(FORMAT)
+        print(f"[SERVER]: {msg}")
 
-    """ Sending the file data to the server. """
-    client.send(data.encode(FORMAT))
-    msg = client.recv(SIZE).decode(FORMAT)
-    print(f"[SERVER]: {msg}")
-
-    file.close()
+        """ Sending the file data to the server. """
+        client.send(data.encode(FORMAT))
+        msg = client.recv(SIZE).decode(FORMAT)
+        print(f"[SERVER]: {msg}")
 
     client.close()
+    
