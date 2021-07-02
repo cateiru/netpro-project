@@ -13,7 +13,7 @@ def server(address: List[str], file_path: str)-> None:
     print('Starting')
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(address, PORT)
-    server.listen()
+    server.listen(5)
 
     while True:
         conn, addr = server.accept()
