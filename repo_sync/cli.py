@@ -22,7 +22,7 @@ _LOG.setLevel(logging.INFO)
               help="Client address to synchronize.", required=True)
 @click.option('--file', '-f', 'file_path', type=click.Path(exists=True), prompt=True,
               help="File path to synchronize.", required=True)
-@click.option('--server-chose', '-s', is_flag=True, help="chose server", required=True)
+@click.option('--server-chose', '-s', is_flag=True, help="chose server")
 def sync_cli(address: List[str], file_path: str, server_chose: bool) -> None:
     """
     RepoSync cli
