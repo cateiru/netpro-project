@@ -1,16 +1,21 @@
 import socket
-import threading
+import logging
 from typing import List
 
-PORT = 4455
-FORMAT = "utf-8"
-SIZE = 1024
+
+logging.basicConfig()
+_LOG = logging.getLogger(__name__)
+_LOG.setLevel(logging.INFO)
 
 def client(address: List[str], file_path: str) -> None:
     """
     address (List[str]): client address to synchronize.
     file_path (str): file path to synchronize.
     """
+
+    PORT = 4455
+    FORMAT = "utf-8"
+    SIZE = 1024
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect(address, PORT)
 
@@ -19,12 +24,6 @@ def client(address: List[str], file_path: str) -> None:
 
         client.send(data.encode(FORMAT))
         msg = client.recv(SIZE).decode(FORMAT)
-        print(f"[SERVER]: {msg}")
-
-        """ Sending the file data to the server. """
-        client.send(data.encode(FORMAT))
-        msg = client.recv(SIZE).decode(FORMAT)
-        print(f"[SERVER]: {msg}")
+        _LOG.info(f"[SERVER]: {msg}")
 
     client.close()
-    
