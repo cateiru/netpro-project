@@ -11,6 +11,7 @@ import click
 from .server import server
 from .client import client
 from .core_op import fop, show as core_show, apply as core_apply
+
 logging.basicConfig()
 _LOG = logging.getLogger(__name__)
 _LOG.setLevel(logging.INFO)
@@ -31,11 +32,10 @@ def sync_cli(address: List[str], file_path: str) -> None:
     """
     _LOG.info("address: %s", ", \n".join(address))
     _LOG.info("file %s", file_path)
-
     fop(file_path, '.cache')
-
     server(address, file_path)
     client(address, file_path)
+
 
 @click.group()
 def git_cli() -> None:
