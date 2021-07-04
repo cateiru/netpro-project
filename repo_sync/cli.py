@@ -9,9 +9,9 @@ from typing import List
 import click
 import socket
 
-from .core_op import fop
 from .server import server
 from .client import client
+from .core_op import fop, show as core_show, apply as core_apply
 logging.basicConfig()
 _LOG = logging.getLogger(__name__)
 _LOG.setLevel(logging.INFO)
@@ -46,19 +46,25 @@ def git_cli() -> None:
 
 
 @git_cli.command()
-def show() -> None:
+@click.option('--pager', '-p', 'use_pager', help="use pager", default=True)
+def show(use_pager: bool) -> None:
     """
     show logs.
     """
+    core_show(".cache", use_pager)
 
 
 @git_cli.command()
 @click.option('--hash', '-h', 'hash_value', prompt=True, help="A hash of the history to apply.", required=True)
-def applay(hash_value: str) -> None:
+@click.option('--file', '-f', 'file_path', type=click.Path(exists=True), prompt=True,
+              help="File path to update.", required=True)
+def apply(hash_value: str, file_path: str) -> None:
     """
     Specify a hash to undo history changes.
 
     Args:
         hash (str): A hash of the history to apply.
     """
-    _LOG.info("Hash: %s", hash_value)
+    _LOG.info("Apply hash of: %s", hash_value)
+    core_apply(hash_value, '.cache', file_path)
+    _LOG.info("Update file: %s", file_path)
