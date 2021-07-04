@@ -13,17 +13,17 @@ def client(address: List[str], file_path: str) -> None:
     file_path (str): file path to synchronize.
     """
 
-    PORT = 4455
-    FORMAT = "utf-8"
-    SIZE = 1024
+    port = 4455
+    format = "utf-8"
+    size = 1024
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(address, PORT)
+    client.connect(address, port)
 
     with open(file_path, "r") as file:
         data = file.read()
 
-        client.send(data.encode(FORMAT))
-        msg = client.recv(SIZE).decode(FORMAT)
-        _LOG.info(f"[SERVER]: {msg}")
+        client.send(data.encode(format))
+        msg = client.recv(size).decode(format)
+        _LOG.info("message: %s", msg)
 
     client.close()
