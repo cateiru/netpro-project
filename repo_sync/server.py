@@ -12,23 +12,24 @@ def server(address: List[str], file_path: str)-> None:
     address (List[str]): client address to synchronize.
     file_path (str): file path to synchronize.
     """
+
     port = 4455
-    format = "utf-8"
+    code = "utf-8"
     size = 1024
     _LOG.info('Starting')
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(address, port)
     server.listen(5)
 
-    conn, addr = server.accept()
-    filename = conn.recv(size).decode(format)
+    conn = server.accept()
+    filename = conn.recv(size).decode(code)
     _LOG.info("filename: %s",filename)
     with open(file_path, "w") as file:
-        conn.send("Filename received.".encode(format))
+        conn.send("Filename received.".encode(code))
         
-        data = conn.recv(size).decode(format)
+        data = conn.recv(size).decode(code)
         _LOG.info("Receiving the file data.")
         file.write(data)
-        conn.send("File data received".encode(format))
+        conn.send("File data received".encode(code))
     conn.close()
     _LOG.info('disconnected')

@@ -7,7 +7,6 @@ import logging
 from typing import List
 
 import click
-import socket
 
 from .server import server
 from .client import client

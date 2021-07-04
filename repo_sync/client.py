@@ -14,7 +14,7 @@ def client(address: List[str], file_path: str) -> None:
     """
 
     port = 4455
-    format = "utf-8"
+    code = "utf-8"
     size = 1024
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect(address, port)
@@ -22,8 +22,8 @@ def client(address: List[str], file_path: str) -> None:
     with open(file_path, "r") as file:
         data = file.read()
 
-        client.send(data.encode(format))
-        msg = client.recv(size).decode(format)
+        client.send(data.encode(code))
+        msg = client.recv(size).decode(code)
         _LOG.info("message: %s", msg)
 
     client.close()
