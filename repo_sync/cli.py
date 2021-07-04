@@ -22,7 +22,8 @@ _LOG.setLevel(logging.INFO)
               help="Client address to synchronize.", required=True)
 @click.option('--file', '-f', 'file_path', type=click.Path(exists=True), prompt=True,
               help="File path to synchronize.", required=True)
-def sync_cli(address: List[str], file_path: str) -> None:
+@click.option('--server-chose', '-s', is_flag=True, help="chose server", required=True)
+def sync_cli(address: List[str], file_path: str, server_chose: bool) -> None:
     """
     RepoSync cli
 
@@ -33,8 +34,10 @@ def sync_cli(address: List[str], file_path: str) -> None:
     _LOG.info("address: %s", ", \n".join(address))
     _LOG.info("file %s", file_path)
     fop(file_path, '.cache')
-    server(address, file_path)
-    client(address, file_path)
+    if server_chose:
+        server(address, file_path)
+    else:
+        client(address, file_path)
 
 
 @click.group()
