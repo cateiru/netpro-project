@@ -61,6 +61,7 @@ def server_process(client_socket: socket.socket, size: int, is_update: Value, ca
         msg = client_socket.recv(size).decode('UTF-8')
 
         if msg != 'None':
+            _LOG.info('Update cache!')
             with open(str(cache_file), mode='w') as file:
                 file.write(msg)
             if is_update.value == 1:
@@ -75,6 +76,7 @@ def server_process(client_socket: socket.socket, size: int, is_update: Value, ca
             if is_update.value != is_send:
                 with open(str(cache_file), mode='r') as file:
                     data = file.read()
+                _LOG.info('Send client')
                 client_socket.send(data.encode('UTF-8'))
                 is_send = is_update.value
             else:
