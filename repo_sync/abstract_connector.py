@@ -30,7 +30,8 @@ class AbstractConnect(ABC):
         """
         self._socket.close()
 
-    def _create_socket(self) -> socket.socket:
+    @staticmethod
+    def _create_socket() -> socket.socket:
         """
         Create socket instance.
 
