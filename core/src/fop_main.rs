@@ -10,9 +10,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let directory = Path::new(".cache");
     let fp = FileOperation::new(path, directory).unwrap();
     let sleep_time = time::Duration::from_nanos(100000000);
+    let mut update = false;
 
-    while !fp.check().unwrap() {
+    loop {
+        update = fp.check(&update).unwrap();
         thread::sleep(sleep_time);
     }
-    Ok(())
 }

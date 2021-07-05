@@ -5,6 +5,7 @@ import logging
 import socket
 from multiprocessing import Process, Value
 from pathlib import Path
+import time
 
 from .abstract_connector import AbstractConnect
 
@@ -33,8 +34,13 @@ class Server(AbstractConnect):
         is_update = Value('i', 0)
         cache_file = Path('cache')
 
+        # create cache file
+        with open(str(cache_file), mode="w"):
+            pass
+
         while True:
-            client_socket, _ = self._socket.accept()
+            client_socket, address = self._socket.accept()
+            _LOG.info('Connect client: %s', address)
             thread_jobs.append(
                 Process(target=server_process, args=(client_socket, self._size, is_update, cache_file)))
             thread_jobs[-1].start()
@@ -76,3 +82,5 @@ def server_process(client_socket: socket.socket, size: int, is_update: Value, ca
                 is_send = is_update.value
             else:
                 client_socket.send('None'.encode('UTF-8'))
+
+        time.sleep(1)

@@ -18,6 +18,18 @@ class AbstractConnect(ABC):
         self._size = 2048
         self._socket = self._create_socket()
 
+    def __enter__(self):
+        """
+        enter
+        """
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """
+        Post-processing
+        """
+        self._socket.close()
+
     def _create_socket(self) -> socket.socket:
         """
         Create socket instance.
