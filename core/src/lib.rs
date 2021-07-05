@@ -18,11 +18,12 @@ fn fop(file_path: String, dir: String) -> PyResult<()> {
     let directory = Path::new(&dir);
     let fp = FileOperation::new(_path, directory).unwrap();
     let sleep_time = time::Duration::from_nanos(100000000);
+    let mut update = false;
 
-    while !fp.check().unwrap() {
+    loop {
+        update = fp.check(&update).unwrap();
         thread::sleep(sleep_time);
     }
-    Ok(())
 }
 
 #[pyfunction]

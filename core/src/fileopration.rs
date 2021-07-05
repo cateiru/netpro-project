@@ -1,15 +1,15 @@
 use crate::exception::Error::FileNotFoundError;
-use sha2::{Sha256, Digest};
+use chrono::{DateTime, Local};
+use csv::{Writer, WriterBuilder};
+use sha2::{Digest, Sha256};
 use std::{
     error::Error,
     fs::{copy, create_dir_all, File, OpenOptions},
     io,
     io::{Read, Write},
     path::Path,
-    time::SystemTime
+    time::SystemTime,
 };
-use csv::{WriterBuilder, Writer};
-use chrono::{Local, DateTime};
 
 pub struct FileOperation<'a> {
     path: &'a Path,
@@ -39,13 +39,13 @@ impl<'a> FileOperation<'a> {
     ///
     /// Returns:
     /// - bool: True if updated, false otherwise.
-    pub fn check(&self) -> Result<bool, Box<dyn Error>> {
+    pub fn check(&self, old: &bool) -> Result<bool, Box<dyn Error>> {
         let cache_file = self.cache_dir.join("cache");
         let is_exist_cache = cache_file.exists();
         let _hash = hash(&mut File::open(self.path)?, false)?;
         let cache_file_path = self.cache_dir.join("cache_file");
 
-        let mut is_change = false;
+        let mut is_change = old.clone();
 
         if is_exist_cache {
             let buf = read(&cache_file)?;
@@ -62,7 +62,7 @@ impl<'a> FileOperation<'a> {
                 write(&cache_file, &_hash.into_bytes())?;
                 save_history(&self.path, &self.cache_dir, false)?;
 
-                is_change = true;
+                is_change = !is_change;
             }
         } else {
             // create initialize hash dir
@@ -70,9 +70,26 @@ impl<'a> FileOperation<'a> {
             write(&cache_file, &_hash.into_bytes())?;
             save_history(&self.path, &self.cache_dir, false)?;
 
-            is_change = true;
+            is_change = !is_change;
         }
+        Ok(change_flag(
+            &self.cache_dir.join("is_update"),
+            is_change,
+            *old,
+        )?)
+    }
+}
+
+fn change_flag(
+    cache_file: &Path,
+    is_change: bool,
+    old_change: bool,
+) -> Result<bool, Box<dyn Error>> {
+    if is_change ^ old_change {
+        write(cache_file, &format!("{}", is_change).into_bytes())?;
         Ok(is_change)
+    } else {
+        Ok(old_change)
     }
 }
 
@@ -105,7 +122,12 @@ fn hash(mut file: &mut File, use_time: bool) -> Result<String, Box<dyn Error>> {
     let mut hasher = Sha256::new();
     let _ = io::copy(&mut file, &mut hasher)?;
     if use_time {
-        hasher.update(format!("{}", SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?.as_secs()));
+        hasher.update(format!(
+            "{}",
+            SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)?
+                .as_secs()
+        ));
     }
     let hash = &format!("{:x}", hasher.finalize())[..10];
     Ok(hash.to_string())
@@ -149,7 +171,6 @@ fn write(path: &Path, text: &Vec<u8>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-
 /// save history.
 ///
 /// Arguments:
@@ -164,13 +185,13 @@ fn save_history(file: &Path, save_dir: &Path, from_remote: bool) -> Result<(), B
         true => {
             let _file = OpenOptions::new().append(true).open(history_hash_path)?;
             WriterBuilder::new().has_headers(false).from_writer(_file)
-        },
+        }
         false => Writer::from_path(history_hash_path)?,
     };
     wtr.write_record(&[
         format!("{}", local_datetime),
         _hash.to_string(),
-        format!("{}", from_remote)
+        format!("{}", from_remote),
     ])?;
     wtr.flush()?;
 
