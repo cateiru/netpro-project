@@ -25,13 +25,7 @@ class Server(AbstractConnect):
     def connect(self):
         """
         Server run.
-
-        Raises:
-            TypeError: address is Tuple.
         """
-        if not isinstance(self._address, str):
-            raise TypeError("Address is Tuple")
-
         self._socket.bind((self._address, self._port))
         self._socket.listen(5)
 
@@ -40,7 +34,7 @@ class Server(AbstractConnect):
         cache_file = Path('cache')
 
         while True:
-            client_socket, addr = self._socket.accept()
+            client_socket, _ = self._socket.accept()
             thread_jobs.append(
                 Process(target=server_process, args=(client_socket, self._size, is_update, cache_file)))
             thread_jobs[-1].start()

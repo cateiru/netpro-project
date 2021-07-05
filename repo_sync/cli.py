@@ -4,7 +4,6 @@ Cli
 Copyright (C) 2021 Netpro Project RepoSync
 """
 import logging
-from typing import List
 
 import click
 
@@ -18,11 +17,11 @@ _LOG.setLevel(logging.INFO)
 
 
 @click.command()
-@click.option('--address', '-a', multiple=True, prompt=False,
+@click.option('--address', '-a', prompt=False,
               help="Client address to synchronize.", required=True)
 @click.option('--file', '-f', 'file_path', type=click.Path(exists=True), prompt=True,
               help="File path to synchronize.", required=True)
-def sync_cli(address: List[str], file_path: str) -> None:
+def sync_cli(address: str, file_path: str) -> None:
     """
     RepoSync cli
 
@@ -30,7 +29,7 @@ def sync_cli(address: List[str], file_path: str) -> None:
         address (List[str]): client address to synchronize.
         file_path (str): file path to synchronize.
     """
-    _LOG.info("address: %s", ", \n".join(address))
+    _LOG.info("address: %s", address)
     _LOG.info("file %s", file_path)
     client(address, file_path)
 

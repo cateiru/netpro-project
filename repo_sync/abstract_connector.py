@@ -5,7 +5,6 @@ Copyright (C) 2021 Netpro Project RepoSync
 """
 import socket
 from abc import ABC
-from typing import Tuple, Union
 
 
 class AbstractConnect(ABC):
@@ -13,7 +12,7 @@ class AbstractConnect(ABC):
     Server and Client abstract class.
     """
 
-    def __init__(self, port: int, address: Union[Tuple[str], str]):
+    def __init__(self, port: int, address: str):
         self._port = port
         self._address = address
         self._size = 2048
