@@ -1,36 +1,81 @@
 """
 This is a serversocket program.
 """
-import socket
 import logging
-from typing import List
+import socket
+from pathlib import Path
+from multiprocessing import Value, Process
+from .abstract_connector import AbstractConnect
 
 logging.basicConfig()
 _LOG = logging.getLogger(__name__)
 _LOG.setLevel(logging.INFO)
 
 
-def server(address: List[str], file_path: str) -> None:
+class Server(AbstractConnect):
     """
-    address (List[str]): client address to synchronize.
-    file_path (str): file path to synchronize.
+    Server.
     """
-    port = 4455
-    code = "utf-8"
-    size = 1024
-    addres = (address, port)
-    _LOG.info('Starting')
-    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serversocket.bind(addres)
-    serversocket.listen(5)
-    conn, addr = serversocket.accept()
-    filename = conn.recv(size).decode(code)
-    _LOG.info("filename: %s", filename)
-    with open(file_path, "w") as file:
-        conn.send("Filename received.".encode(code))
-        data = conn.recv(size).decode(code)
-        _LOG.info("Receiving the file data.")
-        file.write(data)
-        conn.send("File data received".encode(code))
-    conn.close()
-    _LOG.info('%s disconnected', addr)
+
+    def __init__(self, port: int):
+        address = socket.gethostname()
+        super().__init__(port, address)
+
+    def connect(self):
+        """
+        Server run.
+
+        Raises:
+            TypeError: address is Tuple.
+        """
+        if not isinstance(self._address, str):
+            raise TypeError("Address is Tuple")
+
+        self._socket.bind((self._address, self._port))
+        self._socket.listen(5)
+
+        thread_jobs = []
+        is_update = Value('i', 0)
+        cache_file = Path('cache')
+
+        while True:
+            client_socket, addr = self._socket.accept()
+            thread_jobs.append(
+                Process(target=server_process, args=(client_socket, self._size, is_update, cache_file)))
+            thread_jobs[-1].start()
+
+
+def server_process(client_socket: socket.socket, size: int, is_update: Value, cache_file: Path):
+    """
+    Connection server to client process.
+
+    Args:
+        client_socket (socket.socket): Socket of client connection.
+        size (int): send buffer size.
+        is_update (Value): update flag.
+        cache_file (Path): cache file path.
+    """
+    is_send = is_update.value
+
+    while True:
+        msg = client_socket.recv(size).decode('UTF-8')
+
+        if msg != 'None':
+            with open(str(cache_file), mode='w') as file:
+                file.write(msg)
+            if is_update.value == 1:
+                is_update.value = 0
+                is_send = 0
+            else:
+                is_update.value = 1
+                is_send = 1
+
+            client_socket.send('None'.encode('UTF-8'))
+        else:
+            if is_update.value != is_send:
+                with open(str(cache_file), mode='r') as file:
+                    data = file.read()
+                client_socket.send(data.encode('UTF-8'))
+                is_send = is_update.value
+            else:
+                client_socket.send('None'.encode('UTF-8'))

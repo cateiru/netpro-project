@@ -8,9 +8,9 @@ from typing import List
 
 import click
 
-from .server import server
+from .server import Server
 from .client import client
-from .core_op import fop, show as core_show, apply as core_apply
+from .core_op import show as core_show, apply as core_apply
 
 logging.basicConfig()
 _LOG = logging.getLogger(__name__)
@@ -22,8 +22,7 @@ _LOG.setLevel(logging.INFO)
               help="Client address to synchronize.", required=True)
 @click.option('--file', '-f', 'file_path', type=click.Path(exists=True), prompt=True,
               help="File path to synchronize.", required=True)
-@click.option('--server-chose', '-s', is_flag=True, help="chose server")
-def sync_cli(address: List[str], file_path: str, server_chose: bool) -> None:
+def sync_cli(address: List[str], file_path: str) -> None:
     """
     RepoSync cli
 
@@ -33,11 +32,21 @@ def sync_cli(address: List[str], file_path: str, server_chose: bool) -> None:
     """
     _LOG.info("address: %s", ", \n".join(address))
     _LOG.info("file %s", file_path)
-    fop(file_path, '.cache')
-    if server_chose:
-        server(address, file_path)
-    else:
-        client(address, file_path)
+    client(address, file_path)
+
+
+@click.command()
+@click.option('--port', '-p', multiple=True, prompt=False,
+              help="Use port", required=True, type=int)
+def server_cli(port: int):
+    """
+    Server
+
+    Args:
+        port (int): use port.
+    """
+    server = Server(port)
+    server.connect()
 
 
 @click.group()
