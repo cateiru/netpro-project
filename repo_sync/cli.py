@@ -4,11 +4,14 @@ Cli
 Copyright (C) 2021 Netpro Project RepoSync
 """
 import logging
-from typing import List
+from pathlib import Path
 
 import click
 
-from .core_op import fop, show as core_show, apply as core_apply
+from .client import Client
+from .core_op import apply as core_apply
+from .core_op import show as core_show
+from .server import Server
 
 logging.basicConfig()
 _LOG = logging.getLogger(__name__)
@@ -16,22 +19,37 @@ _LOG.setLevel(logging.INFO)
 
 
 @click.command()
-@click.option('--address', '-a', multiple=True, prompt=False,
+@click.option('--address', '-a', prompt=False,
               help="Client address to synchronize.", required=True)
 @click.option('--file', '-f', 'file_path', type=click.Path(exists=True), prompt=True,
               help="File path to synchronize.", required=True)
-def sync_cli(address: List[str], file_path: str) -> None:
+@click.option('--port', '-p', prompt=False, help="Use port", required=True, type=int)
+def sync_cli(address: str, file_path: str, port: int) -> None:
     """
     RepoSync cli
 
     Args:
-        address (List[str]): client address to synchronize.
+        address (str): client address to synchronize.
         file_path (str): file path to synchronize.
+        port (int): connect port.
     """
-    _LOG.info("address: %s", ", \n".join(address))
-    _LOG.info("file %s", file_path)
+    _LOG.info("address: %s", address)
+    _LOG.info("port: %d", port)
+    with Client(port, address) as client:
+        client.connect(Path(file_path), Path('.cache'))
 
-    fop(file_path, '.cache')
+
+@click.command()
+@click.option('--port', '-p', prompt=False, help="Use port", required=True, type=int)
+def server_cli(port: int):
+    """
+    Server
+
+    Args:
+        port (int): use port.
+    """
+    with Server(port) as server:
+        server.connect()
 
 
 @click.group()
