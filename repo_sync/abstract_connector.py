@@ -1,9 +1,18 @@
+"""
+Server and Client abstract class.
+
+Copyright (C) 2021 Netpro Project RepoSync
+"""
 import socket
 from abc import ABC
 from typing import Tuple, Union
 
 
 class AbstractConnect(ABC):
+    """
+    Server and Client abstract class.
+    """
+
     def __init__(self, port: int, address: Union[Tuple[str], str]):
         self._port = port
         self._address = address

@@ -3,8 +3,9 @@ This is a serversocket program.
 """
 import logging
 import socket
+from multiprocessing import Process, Value
 from pathlib import Path
-from multiprocessing import Value, Process
+
 from .abstract_connector import AbstractConnect
 
 logging.basicConfig()
