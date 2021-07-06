@@ -60,6 +60,9 @@ repo-syncを使用するには必ず1つのサーバーを実行してくださ�
 - `-p [int]`. `--port=[int]`
   - 使用するポート
   - repo-syncでのポートと同じにしてください
+- `-a [str]`, `--address [str]`
+  - サーバーのアドレス
+  - デフォルトはsocket.gethostname
 
 #### repo-git show
 
