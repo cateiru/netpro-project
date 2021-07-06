@@ -4,6 +4,7 @@ Cli
 Copyright (C) 2021 Netpro Project RepoSync
 """
 import logging
+import socket
 from pathlib import Path
 
 import click
@@ -19,11 +20,11 @@ _LOG.setLevel(logging.INFO)
 
 
 @click.command()
-@click.option('--address', '-a', prompt=False,
+@click.option('--address', '-a', prompt=True,
               help="Client address to synchronize.", required=True)
 @click.option('--file', '-f', 'file_path', type=click.Path(exists=True), prompt=True,
               help="File path to synchronize.", required=True)
-@click.option('--port', '-p', prompt=False, help="Use port", required=True, type=int)
+@click.option('--port', '-p', prompt=True, help="Use port", required=True, type=int)
 def sync_cli(address: str, file_path: str, port: int) -> None:
     """
     RepoSync cli
@@ -40,15 +41,18 @@ def sync_cli(address: str, file_path: str, port: int) -> None:
 
 
 @click.command()
-@click.option('--port', '-p', prompt=False, help="Use port", required=True, type=int)
-def server_cli(port: int):
+@click.option('--port', '-p', prompt=True, help="Use port", required=True, type=int)
+@click.option('--address', '-a', prompt=True,
+              help="Self address", required=False, default=socket.gethostname())
+def server_cli(port: int, address: str):
     """
     Server
 
     Args:
         port (int): use port.
+        address (str): self address.
     """
-    with Server(port) as server:
+    with Server(port, address) as server:
         server.connect()
 
 
@@ -64,6 +68,9 @@ def git_cli() -> None:
 def show(use_pager: bool) -> None:
     """
     show logs.
+
+    Args:
+        use_pager (bool): use pager
     """
     core_show(".cache", use_pager)
 

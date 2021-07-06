@@ -20,10 +20,6 @@ class Server(AbstractConnect):
     Server.
     """
 
-    def __init__(self, port: int):
-        address = socket.gethostname()
-        super().__init__(port, address)
-
     def connect(self):
         """
         Server run.
