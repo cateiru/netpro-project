@@ -24,9 +24,7 @@ jobs:
         with:
           python-version: 3.8
       - name: build rust
-        run: cd core && cargo build --release
-      - name: move binaly
-        run: mv core/target/release/libcore.so repo_sync/core.so
+        run: ./build.sh
       - name: Install tox and pipenv
         run: pip install tox pipenv typed-ast
       - name: Run tests
