@@ -54,10 +54,13 @@ impl<'a> FileOperation<'a> {
 
             if diff(&cache_hash, &current_hash)? {
                 // write cache file to target file
+                // external update.
                 let text = read(&cache_file_path)?;
                 write(&self.path, &text)?;
+                write(&cache_file, &cache_hash.into_bytes())?;
                 save_history(&cache_file_path, &self.cache_dir, true)?;
             } else if diff(&current_hash, &_hash)? {
+                // internal cache update.
                 copy_file(&self.path, &cache_file_path)?;
                 write(&cache_file, &_hash.into_bytes())?;
                 save_history(&self.path, &self.cache_dir, false)?;
