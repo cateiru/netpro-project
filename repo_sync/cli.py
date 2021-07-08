@@ -11,6 +11,7 @@ import click
 
 from .client import Client
 from .core_op import apply as core_apply
+from .core_op import fop
 from .core_op import show as core_show
 from .server import Server
 
@@ -61,6 +62,19 @@ def git_cli() -> None:
     """
     File update and show log.
     """
+
+
+@git_cli.command()
+@click.option('--file', '-f', 'file_path', type=click.Path(exists=True), prompt=True,
+              help="File path to update.", required=True)
+def init(file_path: str):
+    """
+    Run fop
+
+    Args:
+        filepath (str): Target file path.
+    """
+    fop(file_path, '.cache')
 
 
 @git_cli.command()
