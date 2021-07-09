@@ -1,6 +1,10 @@
 # Repo Sync
 
-from Network Programming Project
+in Network Programming Project
+
+## 発表用スライド
+
+[https://speakerdeck.com/yuto51942/reposync](https://speakerdeck.com/yuto51942/reposync)
 
 ## 機能
 
