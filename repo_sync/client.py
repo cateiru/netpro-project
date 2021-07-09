@@ -2,6 +2,7 @@
 This is a clientsocket program.
 """
 
+import json
 import logging
 import socket
 from multiprocessing import Process
@@ -57,25 +58,19 @@ class Client(AbstractConnect):
                 is_update = data == 'true'
 
                 if is_update == is_send:
-                    server_socket.send('None'.encode('UTF-8'))
+                    server_socket.send(json.dumps({'status': 0, 'data': ''}).encode('UTF-8'))
                 else:
                     with open(str(cache_file_path), mode='r') as file:
                         data = file.read()
 
                     _LOG.info('Send!')
-                    if data == '':
-                        server_socket.send("[[empty]]".encode('UTF-8'))
-                    else:
-                        server_socket.send(data.encode('UTF-8'))
+                    server_socket.send(json.dumps({'status': 1, 'data': data}).encode('UTF-8'))
                     is_send = is_update
                 try:
-                    msg = server_socket.recv(size).decode('UTF-8')
-                    if msg != 'None':
-                        if msg == "[[empty]]":
-                            msg = ""
-
+                    msg = json.loads(server_socket.recv(size).decode('UTF-8'))
+                    if msg['status'] == 1:
                         _LOG.info('Update file!')
                         with open(str(cache_file_path), mode='w') as file:
-                            file.write(msg)
+                            file.write(msg['data'])
                 except socket.timeout:
                     _LOG.error("Recv timeouted.")

@@ -1,6 +1,7 @@
 """
 This is a serversocket program.
 """
+import json
 import logging
 import socket
 import time
@@ -56,12 +57,12 @@ class Server(AbstractConnect):
         is_send = is_update.value
 
         while True:
-            msg = client_socket.recv(size).decode('UTF-8')
+            msg = json.loads(client_socket.recv(size).decode('UTF-8'))
 
-            if msg != 'None':
+            if msg['status'] == 1:
                 _LOG.info('Update cache!')
                 with open(str(cache_file), mode='w') as file:
-                    file.write(msg)
+                    file.write(msg['data'])
                 if is_update.value == 1:
                     is_update.value = 0
                     is_send = 0
@@ -69,15 +70,15 @@ class Server(AbstractConnect):
                     is_update.value = 1
                     is_send = 1
 
-                client_socket.send('None'.encode('UTF-8'))
+                client_socket.send(json.dumps({'status': 0, 'data': ''}).encode('UTF-8'))
             else:
                 if is_update.value != is_send:
                     with open(str(cache_file), mode='r') as file:
                         data = file.read()
                     _LOG.info('Send client')
-                    client_socket.send(data.encode('UTF-8'))
+                    client_socket.send(json.dumps({'status': 1, 'data': data}).encode('UTF-8'))
                     is_send = is_update.value
                 else:
-                    client_socket.send('None'.encode('UTF-8'))
+                    client_socket.send(json.dumps({'status': 0, 'data': ''}).encode('UTF-8'))
 
             time.sleep(1)
