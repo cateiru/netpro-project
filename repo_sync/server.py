@@ -71,6 +71,11 @@ class Server(AbstractConnect):
                     is_send = 1
 
                 client_socket.send(json.dumps({'status': 0, 'data': ''}).encode('UTF-8'))
+            elif msg['status'] == 2:
+                _LOG.info('Upload cache!')
+                with open(str(cache_file), mode='r') as file:
+                    data = file.read()
+                client_socket.send(json.dumps({'status': 1, 'data': data}).encode('UTF-8'))
             else:
                 if is_update.value != is_send:
                     with open(str(cache_file), mode='r') as file:
@@ -81,4 +86,4 @@ class Server(AbstractConnect):
                 else:
                     client_socket.send(json.dumps({'status': 0, 'data': ''}).encode('UTF-8'))
 
-            time.sleep(1)
+            time.sleep(0.5)

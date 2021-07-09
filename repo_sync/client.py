@@ -51,13 +51,17 @@ class Client(AbstractConnect):
             is_update_path (Path): update check file path.
         """
         is_send = False
+        is_start = True
         while True:
             if cache_file_path.exists():
                 with open(str(is_update_path), mode="r") as file:
                     data = file.read()
                 is_update = data == 'true'
 
-                if is_update == is_send:
+                if is_start:
+                    server_socket.send(json.dumps({'status': 2, 'data': ''}).encode('UTF-8'))
+                    is_start = False
+                elif is_update == is_send:
                     server_socket.send(json.dumps({'status': 0, 'data': ''}).encode('UTF-8'))
                 else:
                     with open(str(cache_file_path), mode='r') as file:
